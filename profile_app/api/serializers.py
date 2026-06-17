@@ -32,10 +32,21 @@ class UpdateProfileSerializer(serializers.ModelSerializer):
                   'location', 'tel', 'description', 'working_hours', 'type', 'email', 'created_at']
 
 
-class GetProfileTypeListSerializer(serializers.ModelSerializer):
+class GetProfileTypeBusinessListSerializer(serializers.ModelSerializer):
     user = serializers.IntegerField(source='pk', read_only=True)
 
     class Meta:
         model = User
         fields = ['user', 'username', 'first_name', 'last_name', 'file',
                   'location', 'tel', 'description', 'working_hours', 'type']
+
+
+class GetProfileTypeListCustomerSerializer(serializers.ModelSerializer):
+    user = serializers.IntegerField(source='pk', read_only=True)
+    uploaded_at = serializers.DateTimeField(
+        source='file_uploaded_at', format="%Y-%m-%dT%H:%M:%S", read_only=True)
+
+    class Meta:
+        model = User
+        fields = ['user', 'username', 'first_name',
+                  'last_name', 'file', 'uploaded_at', 'type']

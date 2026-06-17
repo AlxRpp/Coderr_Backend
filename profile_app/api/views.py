@@ -1,13 +1,13 @@
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
-from .serializers import ProfilSerializer, UpdateProfileSerializer, GetProfileTypeListSerializer
-from core.permissons import IsOwnerOrAdmin
+from .serializers import ProfilSerializer, UpdateProfileSerializer, GetProfileTypeBusinessListSerializer, GetProfileTypeListCustomerSerializer
+from core.permissons import IsOwner
 from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
 class GetDetailProfileView(RetrieveUpdateAPIView):
-    permission_classes = [IsOwnerOrAdmin]
+    permission_classes = [IsOwner]
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -21,10 +21,17 @@ class GetDetailProfileView(RetrieveUpdateAPIView):
         return obj
 
 
-class GetProfileTypeListView(ListAPIView):
-    serializer_class = GetProfileTypeListSerializer
-    profile_type = None
+class GetProfileTypeBusinessListView(ListAPIView):
+    serializer_class = GetProfileTypeBusinessListSerializer
 
     def get_queryset(self):
-        obj = User.objects.filter(type=self.profile_type)
+        obj = User.objects.filter(type='business')
+        return obj
+
+
+class GetProfileTypeCustomerListView(ListAPIView):
+    serializer_class = GetProfileTypeListCustomerSerializer
+
+    def get_queryset(self):
+        obj = User.objects.filter(type='customer')
         return obj
