@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'rest_framework.authtoken',
     # APPs
     'auth_app',
-    'profile_app'
+    'profile_app',
+    'offers_app',
 
 ]
 
