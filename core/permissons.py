@@ -46,3 +46,9 @@ class IsOwner(BasePermission):
             return True
         else:
             return is_owner
+
+
+class IsBusinessUser(BasePermission):
+    def has_permission(self, request, view):
+        is_business_user = bool(request.user.type == 'business')
+        return is_business_user

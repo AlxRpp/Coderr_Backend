@@ -28,7 +28,8 @@ class OffersDetails(models.Model):
         ('premium', 'Premium')
     ]
 
-    offers = models.ForeignKey(Offers, on_delete=models.CASCADE)
+    offers = models.ForeignKey(
+        Offers, on_delete=models.CASCADE, related_name='details')
     title = models.CharField(max_length=250, null=False, blank=False)
     revisions = models.IntegerField(blank=False, null=False)
     delivery_time_in_days = models.IntegerField(blank=False, null=False)
@@ -46,7 +47,8 @@ class OffersDetails(models.Model):
 
 
 class OffersDetailsFeatures(models.Model):
-    offers_detail = models.ForeignKey(OffersDetails, on_delete=models.CASCADE)
+    offers_detail = models.ForeignKey(
+        OffersDetails, on_delete=models.CASCADE, related_name='features')
     title = models.CharField(max_length=50, blank=False, null=False)
 
     def __str__(self):
