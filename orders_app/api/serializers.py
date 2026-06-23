@@ -47,3 +47,38 @@ class ListOrCreateOrderSerializer(serializers.ModelSerializer):
         model = Orders
         fields = ['id', 'customer_user', 'business_user', 'offer_detail',
                   'status', 'created_at', 'updated_at', 'offer_detail_id']
+
+
+class UpdateOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orders
+        fields = ['id', 'customer_user', 'business_user', 'offer_detail',
+                  'status', 'created_at', 'updated_at']
+
+    offer_detail = OffersDetailsSerializer(read_only=True)
+    created_at = serializers.DateTimeField(
+        format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
+    updated_at = serializers.DateTimeField(
+        format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
+    customer_user = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+    )
+    business_user = serializers.PrimaryKeyRelatedField(
+        read_only=True,
+    )
+
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        offer_detail = rep.pop('offer_detail')
+
+        for key in ['title', 'revisions', 'delivery_time_in_days', 'price', 'features', 'offer_type']:
+            rep[key] = offer_detail.get(key)
+
+        order = ['id', 'customer_user', 'business_user', 'title', 'revisions',
+                 'delivery_time_in_days', 'price', 'features', 'offer_type',
+                 'status', 'created_at', 'updated_at']
+
+        result = {}
+        for key in order:
+            result[key] = rep[key]
+        return result

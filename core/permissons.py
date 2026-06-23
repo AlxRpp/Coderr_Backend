@@ -25,17 +25,10 @@ user = get_user_model()
 #             return bool(request.user and request.user.is_staff)
 
 
-# class IsOwnerOrAdmin(BasePermission):
-#     def has_object_permission(self, request, view, obj):
-#         is_admin = bool(request.user and request.user.is_superuser)
-#         is_owner = bool(request.user and request.user == obj)
-
-#         if request.method in SAFE_METHODS:
-#             return True
-#         elif request.method == "DELETE":
-#             return is_admin
-#         else:
-#             return is_admin or is_owner
+class IsOwnerOrAdmin(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        is_admin = bool(request.user and request.user.is_superuser)
+        return is_admin
 
 
 class IsOwner(BasePermission):
