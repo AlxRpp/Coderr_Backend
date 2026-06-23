@@ -62,3 +62,9 @@ class IsBusinessUser(BasePermission):
     def has_permission(self, request, view):
         is_business_user = bool(request.user.type == 'business')
         return is_business_user
+
+
+class IsCustomerUser(BasePermission):
+    def has_permission(self, request, view):
+        is_business_user = bool(request.user.type == 'customer')
+        return is_business_user
