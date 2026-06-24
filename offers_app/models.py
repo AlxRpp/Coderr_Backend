@@ -1,10 +1,13 @@
 from django.db import models
-from django.utils import timezone
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
 class Offers(models.Model):
+    """Represents a service offer created by a business user.
+    Each offer can have up to three pricing tiers stored as related OffersDetails objects."""
+
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     title = models.CharField(max_length=250, null=False, blank=False)
     image = models.FileField(upload_to='uploads/offers_img/', null=True)
@@ -22,6 +25,9 @@ class Offers(models.Model):
 
 
 class OffersDetails(models.Model):
+    """Stores one pricing tier (basic, standard or premium) for a parent offer.
+    Each tier is unique per offer, enforced by the unique_together constraint."""
+
     OFFER_DETAIL_CHOICES = [
         ('basic', 'Basic'),
         ('standard', 'Standard'),
@@ -47,6 +53,9 @@ class OffersDetails(models.Model):
 
 
 class OffersDetailsFeatures(models.Model):
+    """A single feature bullet point belonging to one offer detail tier.
+    Features are stored as individual rows so they can be managed flexibly."""
+
     offers_detail = models.ForeignKey(
         OffersDetails, on_delete=models.CASCADE, related_name='features')
     title = models.CharField(max_length=50, blank=False, null=False)

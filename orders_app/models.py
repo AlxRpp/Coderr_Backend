@@ -1,10 +1,14 @@
 from django.db import models
 from offers_app.models import OffersDetails
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
-class Orders (models.Model):
+class Orders(models.Model):
+    """Represents an order placed by a customer for a specific offer detail tier.
+    Tracks which customer placed the order, which business user receieves it and its current status."""
+
     STATUS_CHOICES = [
         ('in_progress', 'In Progress'),
         ('completed', 'Completed'),

@@ -1,15 +1,20 @@
 from rest_framework import serializers
-from django.db.models import Min
 from ..models import Offers, OffersDetails, OffersDetailsFeatures
+from django.db.models import Min
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
 class OffersDetailsSerializer(serializers.ModelSerializer):
+    """Serializes a single offer detail tier including its features.
+    Features are stored as seperate OffersDetailsFeatures rows but are serialized as a flat list of strings."""
+
     features = serializers.ListField(
         child=serializers.CharField(), write_only=True)
 
     def to_representation(self, instance):
+        """Replaces the nested features queryset with a flat list of strings and moves offer_type to the end of the response."""
         rep = super().to_representation(instance)
         offer_type = rep.pop('offer_type')
         rep['features'] = list(
@@ -24,9 +29,13 @@ class OffersDetailsSerializer(serializers.ModelSerializer):
 
 
 class OfferSerializer(serializers.ModelSerializer):
+    """Used for creating and updating offers. Handles the nested details and their features in a single request."""
+
     details = OffersDetailsSerializer(many=True)
 
     def create(self, validated_data):
+        """Creates the offer, then loops through each detail tier and creates its feature rows.
+        Everything happens in one request so the client doesn't need to make seperate calls."""
         details_data = validated_data.pop('details')
         offer = Offers.objects.create(**validated_data)
 
@@ -41,6 +50,8 @@ class OfferSerializer(serializers.ModelSerializer):
         return offer
 
     def update(self, instance, validated_data):
+        """Updates the offer's top-level fields and replaces features for each detail tier.
+        Existing features are deleted and recreated on every update to keep the logic simple."""
         details_data = validated_data.pop('details', [])
 
         instance.title = validated_data.get('title', instance.title)
@@ -75,6 +86,9 @@ class OfferSerializer(serializers.ModelSerializer):
 
 
 class GetOffersListSerializer(serializers.ModelSerializer):
+    """Read-only serializer for the offers list endpoint.
+    Adds calculated fields like min_price, min_delivery_time and a short user summary."""
+
     created_at = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ')
     updated_at = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ')
     details = serializers.SerializerMethodField()
@@ -83,19 +97,23 @@ class GetOffersListSerializer(serializers.ModelSerializer):
     user_details = serializers.SerializerMethodField()
 
     def get_details(self, instance):
+        """Returns only the id and url for each detail tier instead of the full nested objects."""
         return [{"id": details.id, "url": f"/offerdetails/{details.id}/"}
                 for details in instance.details.all()]
 
     def get_min_price(self, instance):
+        """Returns the cheapest price accross all detail tiers of this offer using a database aggregate."""
         result = instance.details.aggregate(min_price=Min('price'))
         return result['min_price']
 
     def get_min_delivery_time(self, instance):
+        """Returns the shortest delivery time across all detail tiers using a database aggregate."""
         result = instance.details.aggregate(
             min_delivery_time=Min('delivery_time_in_days'))
         return result['min_delivery_time']
 
     def get_user_details(self, instance):
+        """Returns a short summary of the offer creator with first name, last name and username."""
         user = instance.user
 
         return {
@@ -111,6 +129,8 @@ class GetOffersListSerializer(serializers.ModelSerializer):
 
 
 class OfferDetailLinkSerializer(serializers.ModelSerializer):
+    """Minimal serializer that provides just the id and a hyperlink for a single offer detail tier."""
+
     url = serializers.HyperlinkedIdentityField(view_name='offerdetails-detail')
 
     class Meta:
@@ -119,6 +139,8 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
 
 
 class GetOfferDetailSerializer(serializers.ModelSerializer):
+    """Read-only serializer for a full offer including nested detail links and calculated min values."""
+
     details = OfferDetailLinkSerializer(many=True, read_only=True)
     created_at = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ')
     updated_at = serializers.DateTimeField(format='%Y-%m-%dT%H:%M:%SZ')
@@ -126,10 +148,12 @@ class GetOfferDetailSerializer(serializers.ModelSerializer):
     min_delivery_time = serializers.SerializerMethodField()
 
     def get_min_price(self, instance):
+        """Calculates the minimum price by agregating over all related OffersDetails objects."""
         result = instance.details.aggregate(min_price=Min('price'))
         return result['min_price']
 
     def get_min_delivery_time(self, instance):
+        """Calculates the minimum delivery time across all related OffersDetails objects."""
         result = instance.details.aggregate(
             min_delivery_time=Min('delivery_time_in_days'))
         return result['min_delivery_time']

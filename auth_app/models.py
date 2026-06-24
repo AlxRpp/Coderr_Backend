@@ -1,10 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
-# Create your models here.
 
 
 class CustomUser(AbstractUser):
+    """Extended user model that adds profile fields and a type field (customer or business).
+    This is the main user model used across the entire project."""
+
     type_choices = [
         ('customer', 'Customer'),
         ('business', 'Business')
@@ -25,13 +27,14 @@ class CustomUser(AbstractUser):
     file_uploaded_at = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if self.pk:  # Objekt existiert schon in der DB
+        """Overrides default save to automatically update file_uploaded_at whenever the profile image changes."""
+        if self.pk:
             old = CustomUser.objects.get(pk=self.pk)
-            if old.file != self.file:  # Hat sich das file geändert?
-                self.file_uploaded_at = timezone.now()  # Timestamp setzen
+            if old.file != self.file:
+                self.file_uploaded_at = timezone.now()
         else:
             if self.file:
-                self.file_uploaded_at = timezone.now()  # Timestamp setzen
+                self.file_uploaded_at = timezone.now()
 
         super().save(*args, **kwargs)
 

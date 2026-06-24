@@ -1,9 +1,11 @@
-from django.contrib.auth import get_user_model
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
+    """Handles new user registration. Expects username, email, password, repeated_password and type."""
 
     repeated_password = serializers.CharField(write_only=True)
 
@@ -20,12 +22,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
         }
 
     def validate_email(self, value):
+        """Checks that no other user is already using this email adress before registration."""
         if User.objects.filter(email=value).exists():
             raise serializers.ValidationError('email already exists')
         return value
 
     def save(self):
-        """Creates the user after checking that both passwords match."""
+        """Creates the user account after verifying that both passwords match. The password is hashed before saving."""
         pw = self.validated_data['password']
         repeated_pw = self.validated_data['repeated_password']
 

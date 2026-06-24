@@ -1,18 +1,22 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .serializers import RegistrationSerializer
 from rest_framework.permissions import AllowAny
 from rest_framework.authtoken.models import Token
 from rest_framework import status
+from .serializers import RegistrationSerializer
 from django.contrib.auth import get_user_model
+
 User = get_user_model()
 
 
 class RegistrationView(APIView):
+    """Handles POST requests for creating a new user account.
+    Returns an auth token right away so the client doesn't need to login seperately after registering."""
+
     permission_classes = [AllowAny]
 
     def post(self, request):
-        """Creates a new user and returns a token right away."""
+        """Validates the registration data, creates the user and returns a token together with basic user info."""
         serializer = RegistrationSerializer(data=request.data)
 
         data = {}
@@ -33,10 +37,14 @@ class RegistrationView(APIView):
 
 
 class LoginUserView(APIView):
+    """Handles login by looking up the user by email and checking the password against the stored hash."""
+
     permission_classes = [AllowAny]
     data = {}
 
     def post(self, request):
+        """Returns a token and basic user info if credentials are valid.
+        Returns 400 for wrong password, missing fields or an unknown email adress."""
         try:
             email = request.data.get('email')
             password = request.data.get('password')

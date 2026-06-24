@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from ..models import Orders
 from offers_app.api.serializers import OffersDetailsSerializer
-from offers_app.models import Offers, OffersDetails
+from offers_app.models import OffersDetails
 
 
 class ListOrCreateOrderSerializer(serializers.ModelSerializer):
+    """Serializer for listing and creating orders.
+    On read, the nested offer detail fields are flattened into the top-level response so the client gets everything in one place."""
+
     offer_detail = OffersDetailsSerializer(read_only=True)
     created_at = serializers.DateTimeField(
         format='%Y-%m-%dT%H:%M:%SZ', read_only=True)
@@ -24,10 +27,12 @@ class ListOrCreateOrderSerializer(serializers.ModelSerializer):
     )
 
     def create(self, validated_data):
+        """Extracts offer_detail_id and creates the order. customer_user and business_user are set by the view."""
         offer_detail = validated_data.pop('offer_detail_id')
         return Orders.objects.create(offer_detail=offer_detail, **validated_data)
 
     def to_representation(self, instance):
+        """Flattens the nested offer_detail object into the top-level response and enforces a fixed field order."""
         rep = super().to_representation(instance)
         offer_detail = rep.pop('offer_detail')
 
@@ -50,6 +55,8 @@ class ListOrCreateOrderSerializer(serializers.ModelSerializer):
 
 
 class UpdateOrderSerializer(serializers.ModelSerializer):
+    """Serializer for updating an existing order. Offer detail fields and user references are read-only here."""
+
     class Meta:
         model = Orders
         fields = ['id', 'customer_user', 'business_user', 'offer_detail',
@@ -68,6 +75,7 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
     )
 
     def to_representation(self, instance):
+        """Same flattening logic as ListOrCreateOrderSerializer — merges offer detail fields into the top-level response."""
         rep = super().to_representation(instance)
         offer_detail = rep.pop('offer_detail')
 
