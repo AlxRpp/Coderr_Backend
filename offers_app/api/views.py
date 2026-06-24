@@ -1,7 +1,9 @@
 from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView, RetrieveAPIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import filters
-from rest_framework.pagination import PageNumberPagination, LimitOffsetPagination
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.exceptions import ValidationError
+
 from .serializers import OfferSerializer, GetOffersListSerializer, GetOfferDetailSerializer, OffersDetailsSerializer
 from ..models import Offers, OffersDetails
 from django_filters.rest_framework import DjangoFilterBackend
@@ -41,14 +43,15 @@ class GetOrCreateOffersView(ListCreateAPIView):
             try:
                 queryset = queryset.filter(min_price_val__gte=float(min_price))
             except (ValueError, TypeError):
-                pass
+                raise ValidationError({'error': 'Must be a valid number.'})
 
         max_delivery_time = self.request.query_params.get('max_delivery_time')
         if max_delivery_time:
             try:
-                queryset = queryset.filter(min_delivery_val__lte=int(max_delivery_time))
+                queryset = queryset.filter(
+                    min_delivery_val__lte=int(max_delivery_time))
             except (ValueError, TypeError):
-                pass
+                raise ValidationError({'error': 'Must be a valid number.'})
 
         ordering = self.request.query_params.get('ordering')
         if ordering == 'min_price':

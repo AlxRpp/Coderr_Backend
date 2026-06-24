@@ -1,4 +1,5 @@
 from rest_framework.generics import RetrieveUpdateAPIView, ListAPIView
+from rest_framework.permissions import IsAuthenticated
 from .serializers import ProfilSerializer, UpdateProfileSerializer, GetProfileTypeBusinessListSerializer, GetProfileTypeListCustomerSerializer
 from core.permissons import IsOwner
 from django.shortcuts import get_object_or_404
@@ -10,7 +11,7 @@ User = get_user_model()
 class GetDetailProfileView(RetrieveUpdateAPIView):
     """Handles GET and PATCH for a single user profile. Only the profile owner can make changes."""
 
-    permission_classes = [IsOwner]
+    permission_classes = [IsAuthenticated, IsOwner]
 
     def get_serializer_class(self):
         """GET returns the full read serializer. PATCH uses the restricted update serializer."""

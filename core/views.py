@@ -11,6 +11,7 @@ User = get_user_model()
 
 
 class CountStatsView(APIView):
+    permission_classes = [AllowAny]
     """Public endpoint that returns platform-wide statistics.
     No authentication required since this data is ment to be publicly visible."""
 
