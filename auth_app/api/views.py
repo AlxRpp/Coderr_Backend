@@ -46,12 +46,12 @@ class LoginUserView(APIView):
         """Returns a token and basic user info if credentials are valid.
         Returns 400 for wrong password, missing fields or an unknown email adress."""
         try:
-            email = request.data.get('email')
+            username = request.data.get('username')
             password = request.data.get('password')
-            if not email or not password:
+            if not username or not password:
                 return Response({'ErrorMessage': 'Please enter valid credentials '}, status=status.HTTP_400_BAD_REQUEST)
 
-            user = User.objects.get(email=email)
+            user = User.objects.get(username=username)
             pw_check = user.check_password(password)
 
             if pw_check:

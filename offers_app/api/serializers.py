@@ -63,6 +63,8 @@ class OfferSerializer(serializers.ModelSerializer):
         for detail_data in details_data:
             features_data = detail_data.pop('features', [])
             offer_type = detail_data.get('offer_type')
+            if not offer_type:
+                raise serializers.ValidationError({'offer_type': 'offer_type is required to update a detail.'})
             detail = instance.details.get(offer_type=offer_type)
 
             detail.title = detail_data.get('title', detail.title)

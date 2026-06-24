@@ -38,11 +38,17 @@ class GetOrCreateOffersView(ListCreateAPIView):
 
         min_price = self.request.query_params.get('min_price')
         if min_price:
-            queryset = queryset.filter(min_price_val__gte=min_price)
+            try:
+                queryset = queryset.filter(min_price_val__gte=float(min_price))
+            except (ValueError, TypeError):
+                pass
 
         max_delivery_time = self.request.query_params.get('max_delivery_time')
         if max_delivery_time:
-            queryset = queryset.filter(min_delivery_val__lte=max_delivery_time)
+            try:
+                queryset = queryset.filter(min_delivery_val__lte=int(max_delivery_time))
+            except (ValueError, TypeError):
+                pass
 
         ordering = self.request.query_params.get('ordering')
         if ordering == 'min_price':
