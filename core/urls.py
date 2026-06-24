@@ -16,6 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from .views import CountStatsView
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -26,7 +27,8 @@ urlpatterns = [
     path('api/', include('profile_app.api.urls')),
     path('api/', include('offers_app.api.urls')),
     path('api/', include('orders_app.api.urls')),
-    path('api/', include('reviews_app.api.urls'))
+    path('api/', include('reviews_app.api.urls')),
+    path('api/base-info/', CountStatsView.as_view(), name='base-infos')
 
 
 

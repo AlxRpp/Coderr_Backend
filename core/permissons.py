@@ -51,6 +51,16 @@ class IsOfferOwner(BasePermission):
             return is_owner
 
 
+class IsReviewOwner(BasePermission):
+    def has_object_permission(self, request, view, obj):
+        is_owner = bool(request.user and request.user == obj.reviewer)
+
+        if request.method in SAFE_METHODS:
+            return True
+        else:
+            return is_owner
+
+
 class IsBusinessUser(BasePermission):
     def has_permission(self, request, view):
         is_business_user = bool(request.user.type == 'business')
